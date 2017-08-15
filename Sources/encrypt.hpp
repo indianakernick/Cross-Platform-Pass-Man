@@ -13,6 +13,10 @@
 #include <experimental/string_view>
 
 std::string decryptFile(uint64_t, std::experimental::string_view);
-void encryptFile(uint64_t, std::experimental::string_view, std::experimental::string_view);
+void encryptFile(
+  uint64_t,
+  std::experimental::string_view,
+  std::experimental::string_view
+);
 
 #endif

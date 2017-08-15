@@ -17,9 +17,10 @@ set(SOURCE_FILES
         Sources/main.cpp
         Sources/parse.cpp
         Sources/parse.hpp
-        Sources/passwords.cpp
         Sources/passwords.hpp
         "Sources/write to clipboard.cpp"
         "Sources/write to clipboard.hpp")
 
 add_executable(Pass_Man_cmake ${SOURCE_FILES})
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -Wpedantic -std=c++1z")

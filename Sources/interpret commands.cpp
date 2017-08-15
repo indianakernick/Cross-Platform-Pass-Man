@@ -8,7 +8,6 @@
 
 #include "interpret commands.hpp"
 
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include "parse.hpp"
@@ -150,7 +149,7 @@ CommandInterpreter::CommandInterpreter() {
 }
 
 CommandInterpreter::~CommandInterpreter() {
-  //goodbye message?
+  std::cout << "Goodbye!\n";
 };
 
 void CommandInterpreter::prefix() {
@@ -162,8 +161,8 @@ constexpr std::experimental::string_view operator""_sv(const char *data, const s
 }
 
 void CommandInterpreter::interpret(const std::experimental::string_view command) {
-  #define COMMAND_IS(COMMAND_NAME) \
-    const auto name = #COMMAND_NAME##_sv; \
+  #define COMMAND_IS(COMMAND_NAME)                                              \
+    const auto name = #COMMAND_NAME##_sv;                                       \
     commandIs(command, name)
   
   if (COMMAND_IS(help)) {
@@ -231,7 +230,7 @@ bool CommandInterpreter::shouldContinue() const {
 
 namespace {
   unsigned long long readNumber(std::experimental::string_view &args) {
-    if (args.size() == 0) {
+    if (args.empty()) {
       throw std::runtime_error("Expected number");
     }
     char *end;
@@ -247,7 +246,7 @@ namespace {
   }
 
   std::string readString(std::experimental::string_view &args) {
-    if (args.size() == 0) {
+    if (args.empty()) {
       throw std::runtime_error("Expected string");
     }
     
@@ -302,7 +301,7 @@ namespace {
   }
 
   void nextArg(std::experimental::string_view &args, const char *signature) {
-    if (args.size() == 0 || args[0] != ' ') {
+    if (args.empty() || args[0] != ' ') {
       throw std::runtime_error(std::string("Command signature is:\n") + signature);
     }
     args.remove_prefix(1);
@@ -316,16 +315,16 @@ void CommandInterpreter::openCommand(
   const uint64_t newKey = readNumber(arguments);
   
   nextArg(arguments, "open <key> <file>");
-  const std::string newFile = readString(arguments);
+  std::string newFile = readString(arguments);
   
   if (!fileExists(newFile.c_str())) {
     std::FILE *fileStream = std::fopen(newFile.c_str(), "w");
     if (fileStream == nullptr) {
       std::cout << "Failed to create file \"" << newFile.c_str() << "\"\n";
       return;
-    } else {
-      std::cout << "Created a new file named \"" << newFile.c_str() << "\"\n";
     }
+    std::cout << "Created a new file named \"" << newFile.c_str() << "\"\n";
+    
     std::fclose(fileStream);
     encryptFile(newKey, newFile, "");
   }
@@ -379,8 +378,8 @@ void CommandInterpreter::dumpCommand(std::experimental::string_view arguments) {
   }
   file.exceptions(0xFFFF);
   
-  for (auto p = passwords->cbegin(); p != passwords->cend(); ++p) {
-    file << p->first << "\n    " << p->second << '\n';
+  for (const auto &p : *passwords) {
+    file << p.first << "\n    " << p.second << '\n';
   }
   
   std::cout << "Database dumped to \"" << filePath << "\"\n";
@@ -388,7 +387,9 @@ void CommandInterpreter::dumpCommand(std::experimental::string_view arguments) {
 
 void CommandInterpreter::expectInit() const {
   if (!passwords) {
-    throw std::runtime_error("Database is uninitialized. Use the open command to initialize");
+    throw std::runtime_error(
+      "Database is uninitialized. Use the open command to initialize"
+    );
   }
 }
 
@@ -400,11 +401,11 @@ void CommandInterpreter::searchCommand(std::experimental::string_view arguments)
   
   searchResults.clear();
   
-  for (auto p = passwords->begin(); p != passwords->end(); ++p) {
-    if (p->first.find(subString) != std::experimental::string_view::npos) {
+  for (const auto &p : *passwords) {
+    if (p.first.find(subString) != std::experimental::string_view::npos) {
       std::cout.width(4);
-      std::cout << searchResults.size() << " - " << p->first << '\n';
-      searchResults.push_back(p->first);
+      std::cout << searchResults.size() << " - " << p.first << '\n';
+      searchResults.push_back(p.first);
     }
   }
   
@@ -420,8 +421,8 @@ void CommandInterpreter::listCommand() const {
   if (passwords->empty()) {
     std::cout << "Database is empty\n";
   } else {
-    for (auto p = passwords->cbegin(); p != passwords->cend(); ++p) {
-      std::cout << p->first << '\n';
+    for (const auto &p : *passwords) {
+      std::cout << p.first << '\n';
     }
   }
 }
@@ -450,7 +451,7 @@ Passwords::iterator CommandInterpreter::uniqueSearch(
 ) {
   expectInit();
   
-  Passwords::iterator iter = passwords->end();
+  auto iter = passwords->end();
   
   for (auto p = passwords->begin(); p != passwords->end(); ++p) {
     if (p->first.find(substring.data(), 0, substring.size()) != std::string::npos) {
@@ -476,9 +477,9 @@ void CommandInterpreter::createCommand(std::experimental::string_view arguments)
   const std::string name = readString(arguments);
   
   nextArg(arguments, "create <name> <new_password>");
-  const std::string password = readString(arguments);
+  std::string password = readString(arguments);
   
-  if (!passwords->emplace(std::move(name), std::move(password)).second) {
+  if (!passwords->emplace(name, std::move(password)).second) {
     std::cout << "Entry was not created. A password for \"" << name << "\" already exists\n";
     return;
   }

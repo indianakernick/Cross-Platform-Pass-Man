@@ -8,7 +8,6 @@
 
 #include "encrypt.hpp"
 
-#include <memory>
 #include <random>
 
 namespace {
@@ -75,8 +74,8 @@ void encryptFile(
   std::mt19937_64 gen(key);
   std::uniform_int_distribution<uint8_t> dist;
   
-  for (auto b = str.cbegin(); b != str.cend(); ++b) {
-    std::fputc(dist(gen) ^ *b, file.get());
+  for (const char c : str) {
+    std::fputc(dist(gen) ^ c, file.get());
   }
   
   //MAC - authenticate then encrypt is secure when used with a stream cipher

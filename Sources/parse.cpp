@@ -25,7 +25,7 @@ Passwords readPasswords(std::experimental::string_view decryptedFile) {
   constexpr size_t npos = std::experimental::string_view::npos;
   
   auto getStr = [&decryptedFile] () -> std::experimental::string_view {
-    const size_t nullChar = decryptedFile.find_first_of('\0');
+    const size_t nullChar = decryptedFile.find_first_of('\0', 0);
     if (nullChar == npos) {
       return {};
     }

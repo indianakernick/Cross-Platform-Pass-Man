@@ -46,6 +46,10 @@ private:
   void genCommand(std::experimental::string_view) const;
   
   Passwords::iterator uniqueSearch(std::experimental::string_view);
+  Passwords::iterator getFromIndex(size_t);
+  
+  Passwords::iterator create(const std::string &, std::string &&);
+  void change(Passwords::iterator, std::string &&);
   
   void createCommand(std::experimental::string_view);
   void createGenCommand(std::experimental::string_view);
@@ -53,12 +57,16 @@ private:
   void changeCommand(std::experimental::string_view);
   void changeSCommand(std::experimental::string_view);
   
-  Passwords::iterator getFromIndex(size_t);
+  void rename(Passwords::iterator, std::string &&);
+  void get(Passwords::const_iterator) const;
   
   void renameCommand(std::experimental::string_view);
   void renameSCommand(std::experimental::string_view);
   void getCommand(std::experimental::string_view);
   void getSCommand(std::experimental::string_view);
+  
+  void copy(Passwords::const_iterator) const;
+  void rem(Passwords::iterator);
   
   void copyCommand(std::experimental::string_view);
   void copySCommand(std::experimental::string_view);

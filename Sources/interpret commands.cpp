@@ -12,9 +12,7 @@
 #include <iostream>
 #include "parse.hpp"
 #include "encrypt.hpp"
-#include "generate key.hpp"
 #include "write to clipboard.hpp"
-#include "generate password.hpp"
 
 namespace {
   const char HELP_TEXT[] =

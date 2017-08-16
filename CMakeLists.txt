@@ -9,16 +9,11 @@ set(SOURCE_FILES
         Sources/app.hpp
         Sources/encrypt.cpp
         Sources/encrypt.hpp
-        "Sources/generate key.cpp"
-        "Sources/generate key.hpp"
-        "Sources/generate password.cpp"
-        "Sources/generate password.hpp"
         "Sources/interpret commands.cpp"
         "Sources/interpret commands.hpp"
         Sources/main.cpp
         Sources/parse.cpp
         Sources/parse.hpp
-        Sources/passwords.hpp
         "Sources/write to clipboard.cpp"
         "Sources/write to clipboard.hpp")
 

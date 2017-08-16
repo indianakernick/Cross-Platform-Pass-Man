@@ -19,4 +19,7 @@ void encryptFile(
   std::experimental::string_view
 );
 
+uint64_t generateKey();
+std::string generatePassword(size_t);
+
 #endif

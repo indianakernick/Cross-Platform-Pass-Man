@@ -49,6 +49,7 @@ private:
   
   void createCommand(std::experimental::string_view);
   void createGenCommand(std::experimental::string_view);
+  void createGenCopyCommand(std::experimental::string_view);
   void changeCommand(std::experimental::string_view);
   void changeSCommand(std::experimental::string_view);
   

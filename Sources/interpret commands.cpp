@@ -31,6 +31,10 @@ open <key> <file>
   Opens a file and decrypts it. Once opened, the file can be manipulated. If the
   file either doesn't exist or is empty, then a new database is created.
 
+close
+  Flushes the current changes and closes the database. The open command must
+  be used to open a new database.
+
 clear
   Removes every entry from the database.
 
@@ -174,6 +178,8 @@ void CommandInterpreter::interpret(const std::experimental::string_view command)
   #define COMMAND_IS(COMMAND_NAME)                                              \
     const auto name = #COMMAND_NAME##_sv;                                       \
     commandIs(command, name)
+
+  #define ARGUMENTS command.substr(name.size())
   
   if (COMMAND_IS(help)) {
     helpCommand();
@@ -182,7 +188,9 @@ void CommandInterpreter::interpret(const std::experimental::string_view command)
   } else if (COMMAND_IS(gen_key_copy)) {
     genKeyCopyCommand();
   } else if (COMMAND_IS(open)) {
-    openCommand(command.substr(name.size()));
+    openCommand(ARGUMENTS);
+  } else if (COMMAND_IS(close)) {
+    closeCommand();
   } else if (COMMAND_IS(clear)) {
     clearCommand();
   } else if (COMMAND_IS(flush)) {
@@ -192,52 +200,62 @@ void CommandInterpreter::interpret(const std::experimental::string_view command)
   } else if (COMMAND_IS(quit_no_flush)) {
     quitNoFlushCommand();
   } else if (COMMAND_IS(dump)) {
-    dumpCommand(command.substr(name.size()));
+    dumpCommand(ARGUMENTS);
   } else if (COMMAND_IS(search)) {
-    searchCommand(command.substr(name.size()));
+    searchCommand(ARGUMENTS);
   } else if (COMMAND_IS(list)) {
     listCommand();
   } else if (COMMAND_IS(count)) {
     countCommand();
   } else if (COMMAND_IS(gen)) {
-    genCommand(command.substr(name.size()));
+    genCommand(ARGUMENTS);
   } else if (COMMAND_IS(create)) {
-    createCommand(command.substr(name.size()));
+    createCommand(ARGUMENTS);
   } else if (COMMAND_IS(create_gen)) {
-    createGenCommand(command.substr(name.size()));
+    createGenCommand(ARGUMENTS);
   } else if (COMMAND_IS(create_gen_copy)) {
-    createGenCopyCommand(command.substr(name.size()));
+    createGenCopyCommand(ARGUMENTS);
   } else if (COMMAND_IS(change)) {
-    changeCommand(command.substr(name.size()));
+    changeCommand(ARGUMENTS);
   } else if (COMMAND_IS(change_s)) {
-    changeSCommand(command.substr(name.size()));
+    changeSCommand(ARGUMENTS);
   } else if (COMMAND_IS(rename)) {
-    renameCommand(command.substr(name.size()));
+    renameCommand(ARGUMENTS);
   } else if (COMMAND_IS(rename_s)) {
-    renameSCommand(command.substr(name.size()));
+    renameSCommand(ARGUMENTS);
   } else if (COMMAND_IS(get)) {
-    getCommand(command.substr(name.size()));
+    getCommand(ARGUMENTS);
   } else if (COMMAND_IS(get_s)) {
-    getSCommand(command.substr(name.size()));
+    getSCommand(ARGUMENTS);
   } else if (COMMAND_IS(copy)) {
-    copyCommand(command.substr(name.size()));
+    copyCommand(ARGUMENTS);
   } else if (COMMAND_IS(copy_s)) {
-    copySCommand(command.substr(name.size()));
+    copySCommand(ARGUMENTS);
   } else if (COMMAND_IS(rem)) {
-    remCommand(command.substr(name.size()));
+    remCommand(ARGUMENTS);
   } else if (COMMAND_IS(rem_s)) {
-    remSCommand(command.substr(name.size()));
+    remSCommand(ARGUMENTS);
   } else {
     unknownCommand(command);
   }
   
   std::cout.flush();
-  
+
+  #undef ARGUMENTS
   #undef COMMAND_IS
 }
 
 bool CommandInterpreter::shouldContinue() const {
   return !quit;
+}
+
+void CommandInterpreter::timeout() {
+  if (passwords) {
+    std::cout << "\nSession timed out\n";
+    closeCommand();
+    prefix();
+    std::cout.flush();
+  }
 }
 
 namespace {
@@ -384,6 +402,17 @@ void CommandInterpreter::openCommand(
   file = std::move(newFile);
   
   std::cout << "Opened the database\n";
+}
+
+void CommandInterpreter::closeCommand() {
+  flushCommand();
+  key = 0;
+  file.clear();
+  passwords = std::experimental::nullopt;
+  searchResults.clear();
+  
+  std::cout << "Closed the database\n"
+               "Use the open command to open a new one\n";
 }
 
 void CommandInterpreter::clearCommand() {

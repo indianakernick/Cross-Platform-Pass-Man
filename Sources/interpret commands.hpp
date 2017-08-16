@@ -22,6 +22,7 @@ public:
   void prefix();
   void interpret(std::experimental::string_view);
   bool shouldContinue() const;
+  void timeout();
 
 private:
   size_t key = 0;
@@ -31,6 +32,7 @@ private:
   bool quit = false;
   
   void openCommand(std::experimental::string_view);
+  void closeCommand();
   void clearCommand();
   void flushCommand() const;
   void quitCommand();

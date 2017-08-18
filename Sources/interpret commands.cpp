@@ -164,7 +164,9 @@ constexpr std::experimental::string_view operator""_sv(
   return {data, size};
 }
 
-void CommandInterpreter::interpret(const std::experimental::string_view command) {
+void CommandInterpreter::interpret(
+  const std::experimental::string_view command
+) {
   #define COMMAND_IS(COMMAND_NAME)                                              \
     const auto name = #COMMAND_NAME##_sv;                                       \
     commandIs(command, name)
@@ -328,7 +330,11 @@ namespace {
   }
   
   template <typename Tuple, typename Function, size_t ...INDICIES>
-  void forEachTupleHelper(Tuple &&tuple, Function &&function, std::index_sequence<INDICIES...>) {
+  void forEachTupleHelper(
+    Tuple &&tuple,
+    Function &&function,
+    std::index_sequence<INDICIES...>
+  ) {
     (function(std::get<INDICIES>(tuple)), ...);
   }
   
@@ -337,7 +343,9 @@ namespace {
     forEachTupleHelper(
       std::forward<Tuple>(tuple),
       std::forward<Function>(function),
-      std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>()
+      std::make_index_sequence<
+        std::tuple_size<std::remove_reference_t<Tuple>>::value
+      >()
     );
   }
   
@@ -363,7 +371,7 @@ namespace {
 }
 
 void CommandInterpreter::openCommand(
-  std::experimental::string_view arguments
+  const std::experimental::string_view arguments
 ) {
   auto [phrase, newFile] = readArgs<std::string, std::string>(
     arguments,
@@ -406,9 +414,14 @@ void CommandInterpreter::closeCommand() {
                "Use the open command to open a new one\n";
 }
 
-void CommandInterpreter::changePhraseCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::changePhraseCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
-  auto [oldPhrase, newPhrase] = readArgs<std::string, std::string>(arguments, "change_phrase <old_phrase> <new_phrase>");
+  auto [oldPhrase, newPhrase] = readArgs<std::string, std::string>(
+    arguments,
+    "change_phrase <old_phrase> <new_phrase>"
+  );
   if (key != generateKey(oldPhrase)) {
     std::cout << "old_phrase does not match the current encryption phrase\n";
     return;
@@ -442,7 +455,9 @@ void CommandInterpreter::quitNoFlushCommand() {
   quit = true;
 }
 
-void CommandInterpreter::dumpCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::dumpCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   
   auto [filePath] = readArgs<std::string>(arguments, "dump <file>");
@@ -461,7 +476,9 @@ void CommandInterpreter::dumpCommand(std::experimental::string_view arguments) {
   std::cout << "Database dumped to \"" << filePath << "\"\n";
 }
 
-void CommandInterpreter::unDumpCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::unDumpCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
 
   auto [filePath] = readArgs<std::string>(arguments, "undump <file>");
@@ -499,7 +516,9 @@ void CommandInterpreter::expectInit() const {
   }
 }
 
-void CommandInterpreter::searchCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::searchCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   
   auto [subString] = readArgs<std::string>(arguments, "search <sub_string>");
@@ -544,7 +563,9 @@ void CommandInterpreter::countCommand() const {
   }
 }
 
-void CommandInterpreter::genCommand(std::experimental::string_view arguments) const {
+void CommandInterpreter::genCommand(
+  const std::experimental::string_view arguments
+) const {
   const auto [size] = readArgs<uint64_t>(arguments, "gen <length>");
   
   std::cout << "Random password: " << generatePassword(size) << '\n';
@@ -616,12 +637,17 @@ Passwords::iterator CommandInterpreter::create(
   return pair.first;
 }
 
-void CommandInterpreter::change(Passwords::iterator entry, std::string &&password) {
+void CommandInterpreter::change(
+  const Passwords::iterator entry,
+  std::string &&password
+) {
   entry->second = std::move(password);
   std::cout << "Changed \"" << entry->first << "\" password\n";
 }
 
-void CommandInterpreter::createCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::createCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   auto [name, password] = readArgs<std::string, std::string>(
     arguments,
@@ -630,7 +656,9 @@ void CommandInterpreter::createCommand(std::experimental::string_view arguments)
   create(name, std::move(password));
 }
 
-void CommandInterpreter::createGenCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::createGenCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   auto [name, length] = readArgs<std::string, size_t>(
     arguments,
@@ -643,7 +671,7 @@ void CommandInterpreter::createGenCommand(std::experimental::string_view argumen
 }
 
 void CommandInterpreter::createGenCopyCommand(
-  std::experimental::string_view arguments
+  const std::experimental::string_view arguments
 ) {
   expectInit();
   auto [name, length] = readArgs<std::string, size_t>(
@@ -658,7 +686,7 @@ void CommandInterpreter::createGenCopyCommand(
 }
 
 void CommandInterpreter::changeCommand(
-  std::experimental::string_view arguments
+  const std::experimental::string_view arguments
 ) {
   expectInit();
   auto [name, password] = readArgs<std::string, std::string>(
@@ -669,7 +697,7 @@ void CommandInterpreter::changeCommand(
 }
 
 void CommandInterpreter::changeSCommand(
-  std::experimental::string_view arguments
+  const std::experimental::string_view arguments
 ) {
   expectInit();
   auto [index, password] = readArgs<size_t, std::string>(
@@ -699,7 +727,7 @@ void CommandInterpreter::rename(
   passwords->erase(entry);
 }
 
-void CommandInterpreter::get(Passwords::const_iterator entry) const {
+void CommandInterpreter::get(const Passwords::const_iterator entry) const {
   std::cout << "Password for \""
             << entry->first
             << "\" is:\n"
@@ -708,7 +736,7 @@ void CommandInterpreter::get(Passwords::const_iterator entry) const {
 }
 
 void CommandInterpreter::renameCommand(
-  std::experimental::string_view arguments
+  const std::experimental::string_view arguments
 ) {
   expectInit();
   auto [name, newName] = readArgs<std::string, std::string>(
@@ -718,7 +746,9 @@ void CommandInterpreter::renameCommand(
   rename(uniqueSearch(name), std::move(newName));
 }
 
-void CommandInterpreter::renameSCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::renameSCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   auto [index, newName] = readArgs<size_t, std::string>(
     arguments,
@@ -727,13 +757,17 @@ void CommandInterpreter::renameSCommand(std::experimental::string_view arguments
   rename(getFromIndex(index), std::move(newName));
 }
 
-void CommandInterpreter::getCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::getCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   const auto [name] = readArgs<std::string>(arguments, "get <name>");
   get(uniqueSearch(name));
 }
 
-void CommandInterpreter::getSCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::getSCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   const auto [index] = readArgs<size_t>(arguments, "get_s <index>");
   get(getFromIndex(index));
@@ -754,25 +788,33 @@ void CommandInterpreter::rem(const Passwords::iterator entry) {
   passwords->erase(entry);
 }
 
-void CommandInterpreter::copyCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::copyCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   const auto [name] = readArgs<std::string>(arguments, "copy <name>");
   copy(uniqueSearch(name));
 }
 
-void CommandInterpreter::copySCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::copySCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   const auto [index] = readArgs<size_t>(arguments, "copy_s <index>");
   copy(getFromIndex(index));
 }
 
-void CommandInterpreter::remCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::remCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   const auto [name] = readArgs<std::string>(arguments, "rem <name>");
   rem(uniqueSearch(name));
 }
 
-void CommandInterpreter::remSCommand(std::experimental::string_view arguments) {
+void CommandInterpreter::remSCommand(
+  const std::experimental::string_view arguments
+) {
   expectInit();
   const auto [index] = readArgs<size_t>(arguments, "rem_s <index>");
   rem(getFromIndex(index));

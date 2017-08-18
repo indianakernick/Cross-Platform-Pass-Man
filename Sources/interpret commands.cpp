@@ -26,6 +26,9 @@ close
   Flushes the current changes and closes the database. The open command must
   be used to open a new database.
 
+change_phrase <old_phrase> <new_phrase>
+  Changes the encryption phrase for the database.
+
 clear
   Removes every entry from the database.
 
@@ -174,6 +177,8 @@ void CommandInterpreter::interpret(const std::experimental::string_view command)
     openCommand(ARGUMENTS);
   } else if (COMMAND_IS(close)) {
     closeCommand();
+  } else if (COMMAND_IS(change_phrase)) {
+    changePhraseCommand(ARGUMENTS);
   } else if (COMMAND_IS(clear)) {
     clearCommand();
   } else if (COMMAND_IS(flush)) {
@@ -399,6 +404,18 @@ void CommandInterpreter::closeCommand() {
   
   std::cout << "Closed the database\n"
                "Use the open command to open a new one\n";
+}
+
+void CommandInterpreter::changePhraseCommand(std::experimental::string_view arguments) {
+  expectInit();
+  auto [oldPhrase, newPhrase] = readArgs<std::string, std::string>(arguments, "change_phrase <old_phrase> <new_phrase>");
+  if (key != generateKey(oldPhrase)) {
+    std::cout << "old_phrase does not match the current encryption phrase\n";
+    return;
+  }
+  
+  key = generateKey(newPhrase);
+  std::cout << "Encryption phrase was changed to \"" << newPhrase << "\"\n";
 }
 
 void CommandInterpreter::clearCommand() {

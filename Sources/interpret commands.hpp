@@ -33,6 +33,7 @@ private:
   
   void openCommand(std::experimental::string_view);
   void closeCommand();
+  void changePhraseCommand(std::experimental::string_view);
   void clearCommand();
   void flushCommand() const;
   void quitCommand();

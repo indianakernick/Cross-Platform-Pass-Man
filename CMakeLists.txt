@@ -18,7 +18,3 @@ set(SOURCE_FILES
         "Sources/write to clipboard.hpp")
 
 add_executable(passman ${SOURCE_FILES})
-
-if (APPLE)
-  install(TARGETS passman DESTINATION /usr/local/bin/)
-endif()

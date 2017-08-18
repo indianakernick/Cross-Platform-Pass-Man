@@ -90,10 +90,9 @@ void encryptFile(
   }
 }
 
-uint64_t generateKey() {
-  static std::random_device gen;
-  std::uniform_int_distribution<uint64_t> dist;
-  return dist(gen);
+uint64_t generateKey(const std::experimental::string_view phrase) {
+  const std::hash<std::experimental::string_view> hasher;
+  return hasher(phrase);
 }
 
 namespace {

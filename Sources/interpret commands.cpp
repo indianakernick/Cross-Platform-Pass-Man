@@ -19,11 +19,11 @@ namespace {
 R"(help
   Prints a list of all commands and what they do.
 
-gen_key
-  Generates an encryption key
+gen_key <phrase>
+  Generates an encryption key from a phrase
 
-gen_key_copy
-  Generates an encryption key and copies it to the clipboard
+gen_key_copy <phrase>
+  Generates an encryption key from a phrase and copies it to the clipboard
 
 open <key> <file>
   Opens a file and decrypts it. Once opened, the file can be manipulated. If the
@@ -140,15 +140,6 @@ rem_s <index>
   void helpCommand() {
     std::cout << HELP_TEXT;
   }
-  
-  void genKeyCommand() {
-    std::cout << "Encryption key: " << generateKey() << '\n';
-  }
-  
-  void genKeyCopyCommand() {
-    writeToClipboard(std::to_string(generateKey()));
-    std::cout << "An encryption key was copied to the clipboard\n";
-  }
 }
 
 CommandInterpreter::CommandInterpreter() {
@@ -163,6 +154,7 @@ CommandInterpreter::~CommandInterpreter() {
 
 void CommandInterpreter::prefix() {
   std::cout << "> ";
+  std::cout.flush();
 }
 
 constexpr std::experimental::string_view operator""_sv(
@@ -182,9 +174,9 @@ void CommandInterpreter::interpret(const std::experimental::string_view command)
   if (COMMAND_IS(help)) {
     helpCommand();
   } else if (COMMAND_IS(gen_key)) {
-    genKeyCommand();
+    genKeyCommand(ARGUMENTS);
   } else if (COMMAND_IS(gen_key_copy)) {
-    genKeyCopyCommand();
+    genKeyCopyCommand(ARGUMENTS);
   } else if (COMMAND_IS(open)) {
     openCommand(ARGUMENTS);
   } else if (COMMAND_IS(close)) {
@@ -249,7 +241,7 @@ bool CommandInterpreter::shouldContinue() const {
 
 void CommandInterpreter::timeout() {
   if (passwords) {
-    std::cout << "\nSession timed out\n";
+    std::cout << "\nSession expired\n";
     closeCommand();
     prefix();
     std::cout.flush();
@@ -368,6 +360,17 @@ namespace {
     
     return output;
   }
+}
+
+void CommandInterpreter::genKeyCommand(const std::experimental::string_view arguments) const {
+  auto [phrase] = readArgs<std::string>(arguments, "gen_key <phrase>");
+  std::cout << "Encryption key: \n" << generateKey(phrase) << '\n';
+}
+
+void CommandInterpreter::genKeyCopyCommand(const std::experimental::string_view arguments) const {
+  auto [phrase] = readArgs<std::string>(arguments, "gen_key_copy <phrase>");
+  writeToClipboard(std::to_string(generateKey(phrase)));
+  std::cout << "Encryption key was copied to the clipboard\n";
 }
 
 void CommandInterpreter::openCommand(

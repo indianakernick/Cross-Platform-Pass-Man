@@ -10,7 +10,6 @@
 
 #include <fstream>
 #include <iostream>
-#include "parse.hpp"
 #include "encrypt.hpp"
 #include "write to clipboard.hpp"
 
@@ -19,13 +18,7 @@ namespace {
 R"(help
   Prints a list of all commands and what they do.
 
-gen_key <phrase>
-  Generates an encryption key from a phrase
-
-gen_key_copy <phrase>
-  Generates an encryption key from a phrase and copies it to the clipboard
-
-open <key> <file>
+open <phrase> <file>
   Opens a file and decrypts it. Once opened, the file can be manipulated. If the
   file either doesn't exist or is empty, then a new database is created.
 
@@ -47,6 +40,10 @@ quit_no_flush
 
 dump <file>
   Writes all passwords into a file WITHOUT ENCRYPTING them. This command is
+  for changes to the tool that may break existing databases.
+
+undump <file>
+  Reads all passwords from a file WITHOUT DECRYPTING them. This command is
   for changes to the tool that may break existing databases.
 
 search <sub_string>
@@ -173,10 +170,6 @@ void CommandInterpreter::interpret(const std::experimental::string_view command)
   
   if (COMMAND_IS(help)) {
     helpCommand();
-  } else if (COMMAND_IS(gen_key)) {
-    genKeyCommand(ARGUMENTS);
-  } else if (COMMAND_IS(gen_key_copy)) {
-    genKeyCopyCommand(ARGUMENTS);
   } else if (COMMAND_IS(open)) {
     openCommand(ARGUMENTS);
   } else if (COMMAND_IS(close)) {
@@ -191,6 +184,8 @@ void CommandInterpreter::interpret(const std::experimental::string_view command)
     quitNoFlushCommand();
   } else if (COMMAND_IS(dump)) {
     dumpCommand(ARGUMENTS);
+  } else if (COMMAND_IS(undump)) {
+    unDumpCommand(ARGUMENTS);
   } else if (COMMAND_IS(search)) {
     searchCommand(ARGUMENTS);
   } else if (COMMAND_IS(list)) {
@@ -362,24 +357,14 @@ namespace {
   }
 }
 
-void CommandInterpreter::genKeyCommand(const std::experimental::string_view arguments) const {
-  auto [phrase] = readArgs<std::string>(arguments, "gen_key <phrase>");
-  std::cout << "Encryption key: \n" << generateKey(phrase) << '\n';
-}
-
-void CommandInterpreter::genKeyCopyCommand(const std::experimental::string_view arguments) const {
-  auto [phrase] = readArgs<std::string>(arguments, "gen_key_copy <phrase>");
-  writeToClipboard(std::to_string(generateKey(phrase)));
-  std::cout << "Encryption key was copied to the clipboard\n";
-}
-
 void CommandInterpreter::openCommand(
   std::experimental::string_view arguments
 ) {
-  auto [newKey, newFile] = readArgs<uint64_t, std::string>(
+  auto [phrase, newFile] = readArgs<std::string, std::string>(
     arguments,
-    "open <key> <file>"
+    "open <phrase> <file>"
   );
+  const uint64_t newKey = generateKey(phrase);
   
   if (!fileExists(newFile.c_str())) {
     std::FILE *fileStream = std::fopen(newFile.c_str(), "w");
@@ -457,6 +442,36 @@ void CommandInterpreter::dumpCommand(std::experimental::string_view arguments) {
   }
   
   std::cout << "Database dumped to \"" << filePath << "\"\n";
+}
+
+void CommandInterpreter::unDumpCommand(std::experimental::string_view arguments) {
+  expectInit();
+
+  auto [filePath] = readArgs<std::string>(arguments, "undump <file>");
+  
+  std::ifstream file(filePath, std::ifstream::binary);
+  if (!file.is_open()) {
+    std::cout << "File open error\n";
+    return;
+  }
+  
+  char name[256];
+  char password[256];
+  
+  while (true) {
+    file.getline(name, sizeof(name));
+    if (file.eof() || file.bad()) {
+      break;
+    }
+    file.getline(password, sizeof(password));
+    if (file.eof() || file.bad()) {
+      break;
+    }
+    
+    passwords->emplace(name, password + 4);
+  }
+  
+  countCommand();
 }
 
 void CommandInterpreter::expectInit() const {

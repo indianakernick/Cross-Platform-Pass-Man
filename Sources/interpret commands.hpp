@@ -31,9 +31,6 @@ private:
   std::vector<std::string> searchResults;
   bool quit = false;
   
-  void genKeyCommand(std::experimental::string_view) const;
-  void genKeyCopyCommand(std::experimental::string_view) const;
-  
   void openCommand(std::experimental::string_view);
   void closeCommand();
   void clearCommand();
@@ -42,6 +39,7 @@ private:
   
   void quitNoFlushCommand();
   void dumpCommand(std::experimental::string_view);
+  void unDumpCommand(std::experimental::string_view);
   
   void expectInit() const;
   

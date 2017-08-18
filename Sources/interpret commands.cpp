@@ -241,7 +241,7 @@ bool CommandInterpreter::shouldContinue() const {
   return !quit;
 }
 
-void CommandInterpreter::timeout() {
+void CommandInterpreter::sessionExpired() {
   if (passwords) {
     std::cout << "\nSession expired\n";
     closeCommand();

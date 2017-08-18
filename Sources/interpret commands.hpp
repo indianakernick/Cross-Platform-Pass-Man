@@ -17,12 +17,17 @@
 class CommandInterpreter {
 public:
   CommandInterpreter();
+  CommandInterpreter(const CommandInterpreter &) = delete;
+  CommandInterpreter(CommandInterpreter &&) = delete;
   ~CommandInterpreter();
+  
+  CommandInterpreter &operator=(const CommandInterpreter &) = delete;
+  CommandInterpreter &operator=(CommandInterpreter &&) = delete;
   
   void prefix();
   void interpret(std::experimental::string_view);
   bool shouldContinue() const;
-  void timeout();
+  void sessionExpired();
 
 private:
   size_t key = 0;

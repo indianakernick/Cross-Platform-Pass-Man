@@ -16,7 +16,7 @@
 //The number of seconds of inactivity before the database is closed
 constexpr uint64_t TIMEOUT_SEC = 2 * 60;
 
-uint64_t getTime() {
+uint64_t getTimeSec() {
   return static_cast<uint64_t>(std::time(nullptr));
 }
 
@@ -38,11 +38,11 @@ void runApp() {
   ] () {
     try {
       while (true) {
-        while (getTime() - lastCommandTime < TIMEOUT_SEC) {
+        while (getTimeSec() - lastCommandTime < TIMEOUT_SEC) {
           std::this_thread::sleep_for(std::chrono::seconds(1));
         }
         closingDatabase = true;
-        interpreter.timeout();
+        interpreter.sessionExpired();
         closingDatabase = false;
       }
     } catch (std::exception &e) {
@@ -55,7 +55,7 @@ void runApp() {
     std::cin.getline(command, sizeof(command));
     //wait until the helper thread has finished closing the database
     while (closingDatabase);
-    lastCommandTime = getTime();
+    lastCommandTime = getTimeSec();
     
     try {
       interpreter.interpret(command);

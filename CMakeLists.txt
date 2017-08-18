@@ -18,3 +18,5 @@ set(SOURCE_FILES
         "Sources/write to clipboard.hpp")
 
 add_executable(passman ${SOURCE_FILES})
+
+target_link_libraries(passman ncurses)

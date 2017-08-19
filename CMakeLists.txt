@@ -19,4 +19,5 @@ set(SOURCE_FILES
 
 add_executable(passman ${SOURCE_FILES})
 
-target_link_libraries(passman ncurses)
+include_directories(/usr/local/Cellar/sdl2/2.0.5/include)
+target_link_libraries(passman /usr/local/Cellar/sdl2/2.0.5/lib/libSDL2.dylib)

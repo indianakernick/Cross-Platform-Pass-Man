@@ -8,12 +8,10 @@
 
 #include "write to clipboard.hpp"
 
-void writeToClipboard(const std::experimental::string_view string) {
-  std::unique_ptr<std::FILE, decltype(&pclose)> pipe(popen("pbcopy", "w"), &pclose);
-  if (pipe == nullptr) {
-    throw std::runtime_error("Failed to open pipe to pbcopy");
-  }
-  if (std::fwrite(string.data(), string.size(), 1, pipe.get()) != 1) {
-    throw std::runtime_error("Failed to write string to pbcopy");
+#include <SDL2/SDL_clipboard.h>
+
+void writeToClipboard(const std::string &string) {
+  if (SDL_SetClipboardText(string.c_str()) == -1) {
+    throw std::runtime_error("Failed to write to clipboard");
   }
 }

@@ -8,10 +8,10 @@
 
 #include "write to clipboard.hpp"
 
-#include <SDL2/SDL_clipboard.h>
+#include "../dependencies/clip/clip.h"
 
 void writeToClipboard(const std::string &string) {
-  if (SDL_SetClipboardText(string.c_str()) == -1) {
+  if (!clip::set_text(string)) {
     throw std::runtime_error("Failed to write to clipboard");
   }
 }

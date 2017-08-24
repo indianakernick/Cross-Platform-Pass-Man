@@ -11,7 +11,6 @@
 #include <ctime>
 #include <thread>
 #include <iostream>
-#include <SDL2/SDL.h>
 #include "interpret commands.hpp"
 
 //The number of seconds of inactivity before the database is closed
@@ -22,11 +21,6 @@ uint64_t getTimeSec() {
 }
 
 void runApp() {
-  if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-    std::cout << "Failed to initialize SDL2.\n"
-                 "passman is unable to copy to clipboard.\n";
-  }
-  
   std::cin.exceptions(0xFF);
   std::cout.exceptions(0xFF);
 
@@ -69,6 +63,4 @@ void runApp() {
       std::cout << e.what() << '\n';
     }
   } while (interpreter.shouldContinue());
-  
-  SDL_Quit();
 }

@@ -19,5 +19,22 @@ set(SOURCE_FILES
 
 add_executable(passman ${SOURCE_FILES})
 
-include_directories(/usr/local/Cellar/sdl2/2.0.5/include)
-target_link_libraries(passman /usr/local/Cellar/sdl2/2.0.5/lib/libSDL2.dylib)
+add_subdirectory(dependencies/clip/)
+include_directories(../dependencies/clip/)
+target_link_libraries(passman clip)
+
+if(APPLE AND UNIX)
+  set(INSTALL_PATH "/usr/local/bin/")
+elseif(WIN32)
+  set(INSTALL_PATH "C:\\Program files (x86)")
+else()
+  message(FATAL_ERROR "Don't know where to install executable")
+endif()
+
+if(INSTALL_PATH)
+  set_target_properties(
+          passman PROPERTIES
+          RUNTIME_OUTPUT_DIRECTORY_DEBUG "${INSTALL_PATH}"
+          RUNTIME_OUTPUT_DIRECTORY_RELEASE "${INSTALL_PATH}"
+  )
+endif()

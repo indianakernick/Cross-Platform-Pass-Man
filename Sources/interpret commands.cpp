@@ -516,6 +516,33 @@ void CommandInterpreter::expectInit() const {
   }
 }
 
+namespace {
+  template <typename Char>
+  struct IEqual {
+    bool operator()(const Char a, const Char b) {
+      return std::tolower(a) == std::tolower(b);
+    }
+  };
+  
+  bool find(
+    const std::experimental::string_view haystack,
+    const std::experimental::string_view needle
+  ) {
+    return haystack.find(needle, 0) != std::experimental::string_view::npos;
+  }
+  
+  bool findI(
+    const std::experimental::string_view haystack,
+    const std::experimental::string_view needle
+  ) {
+    return std::search(
+      haystack.cbegin(), haystack.cend(),
+      needle.cbegin(), needle.cend(),
+      IEqual<char>()
+    ) != haystack.cend();
+  }
+}
+
 void CommandInterpreter::searchCommand(
   const std::experimental::string_view arguments
 ) {
@@ -526,7 +553,7 @@ void CommandInterpreter::searchCommand(
   searchResults.clear();
   
   for (const auto &p : *passwords) {
-    if (p.first.find(subString) != std::experimental::string_view::npos) {
+    if (findI(p.first, subString)) {
       std::cout.width(4);
       std::cout << searchResults.size() << " - " << p.first << '\n';
       searchResults.push_back(p.first);
@@ -571,23 +598,53 @@ void CommandInterpreter::genCommand(
   std::cout << "Random password: " << generatePassword(size) << '\n';
 }
 
+namespace {
+  void ambigous(const std::experimental::string_view substring) {
+    throw std::runtime_error(
+      "More than one password name contains the substring \""
+      + substring.to_string()
+      + "\""
+    );
+  }
+}
+
 Passwords::iterator CommandInterpreter::uniqueSearch(
   const std::experimental::string_view substring
 ) {
   expectInit();
   
+  //iterator to password that has been found
   auto iter = passwords->end();
+  //case insensitive search is used until that becomes ambiguous. Then this flag
+  //is set and case sensitive search is used. When case sensitive search is
+  //ambiguous, an exception is thrown.
+  bool caseSensitive = false;
   
   for (auto p = passwords->begin(); p != passwords->end(); ++p) {
-    if (p->first.find(substring.data(), 0, substring.size()) != std::string::npos) {
-      if (iter == passwords->end()) {
-        iter = p;
-      } else {
-        throw std::runtime_error(
-          "More than one password name contains the substring \""
-          + substring.to_string()
-          + "\""
-        );
+    if (caseSensitive) {
+      if (find(p->first, substring)) {
+        if (iter == passwords->end()) {
+          iter = p;
+        } else {
+          ambigous(substring); //throws
+        }
+      }
+    } else {
+      if (findI(p->first, substring)) {
+        if (iter == passwords->end()) {
+          iter = p;
+        } else {
+          caseSensitive = true;
+          const bool prevMatch = find(iter->first, substring);
+          const bool thisMatch = find(p->first, substring);
+          if (prevMatch && thisMatch) {
+            ambigous(substring); //throws
+          } else if (thisMatch) {
+            iter = p;
+          } else if (!prevMatch) {
+            iter = passwords->end();
+          }
+        }
       }
     }
   }

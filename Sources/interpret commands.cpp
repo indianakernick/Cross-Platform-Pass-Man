@@ -599,7 +599,7 @@ void CommandInterpreter::genCommand(
 }
 
 namespace {
-  void ambigous(const std::experimental::string_view substring) {
+  void ambiguous(const std::experimental::string_view substring) {
     throw std::runtime_error(
       "More than one password name contains the substring \""
       + substring.to_string()
@@ -619,6 +619,10 @@ Passwords::iterator CommandInterpreter::uniqueSearch(
   //is set and case sensitive search is used. When case sensitive search is
   //ambiguous, an exception is thrown.
   bool caseSensitive = false;
+  //when two entries match the substring case insensitively and
+  //both don't match the substring case sensitively. We cant know if they are
+  //ambiguous until we've checked every other entry.
+  bool possiblyAmbiguous = false;
   
   for (auto p = passwords->begin(); p != passwords->end(); ++p) {
     if (caseSensitive) {
@@ -626,7 +630,7 @@ Passwords::iterator CommandInterpreter::uniqueSearch(
         if (iter == passwords->end()) {
           iter = p;
         } else {
-          ambigous(substring); //throws
+          ambiguous(substring); //throws
         }
       }
     } else {
@@ -638,15 +642,20 @@ Passwords::iterator CommandInterpreter::uniqueSearch(
           const bool prevMatch = find(iter->first, substring);
           const bool thisMatch = find(p->first, substring);
           if (prevMatch && thisMatch) {
-            ambigous(substring); //throws
+            ambiguous(substring); //throws
           } else if (thisMatch) {
             iter = p;
           } else if (!prevMatch) {
             iter = passwords->end();
+            possiblyAmbiguous = true;
           }
         }
       }
     }
+  }
+  
+  if (possiblyAmbiguous) {
+    ambiguous(substring); //throws
   }
   
   if (iter == passwords->end()) {

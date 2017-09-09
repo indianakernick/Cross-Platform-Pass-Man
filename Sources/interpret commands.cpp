@@ -410,8 +410,7 @@ void CommandInterpreter::closeCommand() {
   passwords = std::experimental::nullopt;
   searchResults.clear();
   
-  std::cout << "Closed the database\n"
-               "Use the open command to open a new one\n";
+  std::cout << "Closed the database\n";
 }
 
 void CommandInterpreter::changePhraseCommand(
@@ -595,7 +594,7 @@ void CommandInterpreter::genCommand(
 ) const {
   const auto [size] = readArgs<uint64_t>(arguments, "gen <length>");
   
-  std::cout << "Random password: " << generatePassword(size) << '\n';
+  std::cout << "Random password: \n" << generatePassword(size) << '\n';
 }
 
 namespace {
@@ -707,8 +706,9 @@ void CommandInterpreter::change(
   const Passwords::iterator entry,
   std::string &&password
 ) {
-  entry->second = std::move(password);
   std::cout << "Changed \"" << entry->first << "\" password\n";
+  std::cout << "Old password was: \n" << entry->second << '\n';
+  entry->second = std::move(password);
 }
 
 void CommandInterpreter::createCommand(
